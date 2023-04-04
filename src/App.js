@@ -1,23 +1,26 @@
-import logo from './logo.svg';
 import './App.css';
+import Profile from './components/Profile';
+import Board from './components/Board';
+import { Link, Route, Routes } from 'react-router-dom';
+import Header from './components/Header';
+import NotFound from './components/NotFound';
+import BoardDetail from './components/BoardDetail';
+import TestRedux from './components/TestRedux';
+import ListContainer from './components/ListContainer';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {/* <TestRedux />
+      <Routes>
+        <Route path='/' element={<Header/>}/>
+        <Route path='/profile' element={<Profile/>}/>
+        <Route path='/test' element={<TestRedux />}/>
+        <Route path='/board' element={<Board/>}/>
+        <Route path='/*' element={<NotFound/>}/>
+        <Route path='board/:boardID' element={<BoardDetail/>}/>
+      </Routes> */}
+      <ListContainer />
     </div>
   );
 }

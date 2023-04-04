@@ -1,0 +1,20 @@
+{
+  "[javascript]":{
+    "editor.formatOnSave":true,
+    "editor.defaultFormatter":"esbenp.prettier-vscode",
+    "editor.maxTokenizationLineLength": 2500,
+    
+  },
+  "[html]":{
+    "editor.defaultFormatter": "j69.ejs-beautify"
+  },
+  "emmet.includeLanguages": {
+    "ejs": "html"
+  },
+  "[javascriptreact]": {
+    "editor.formatOnSave":true,
+    "editor.defaultFormatter":"esbenp.prettier-vscode",
+    "editor.maxTokenizationLineLength": 2500,
+    
+  }
+}
