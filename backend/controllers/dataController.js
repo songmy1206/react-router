@@ -1,24 +1,20 @@
-//Action type 설정
-const INIT = 'mbti/INIT'
-const CHECK = 'mbti/CHECK'
-const NEXT = 'mbti/NEXT'
-const RESET = 'mbti/RESET'
+const mongoClient = require('./mongoConnect')
 
 // 초기 상태 설정
 const initState = {
   mbtiResult: '',
-  page: 0, // 0: 인트로 페이지, 1 ~ n: 선택 페이지, n+1: 결과 페이지
+  page: 0, // 0 페이지부터 시작 / 0: 인트로 페이지, 1 ~ n: 선택 페이지, n+1: 결과 페이지
   survey: [
     {
       question:
         '퇴근 직전에 동료로부터 개발자 모임에 초대를 받은 나!\n\n퇴근 시간에 나는?',
       answer: [
         {
-          text: '그런 모입을 왜 이제서야 알려 준거야! 당장 모임으로 출발한다',
+          text: '그런 모임을 왜 이제서야 알려 준거야! 당장 모임으로 출발한다',
           result: 'E',
         },
         {
-          text: '1년 전에 알려줬어도 안갔을 건데 뭔... 더 빠르게 집으로 간다',
+          text: '1년 전에 알려줬어도 안 갔을건데 뭔… 더 빠르게 집으로 간다',
           result: 'I',
         },
       ],
@@ -28,7 +24,7 @@ const initState = {
         '새로운 서비스 개발 중에, 동료가 새로 나온 신기술을 쓰는게 더 편할거라고 추천을 해준다!\n\n나의 선택은!?',
       answer: [
         {
-          text: '뭔소리여, 그냥 하던 대로 개발하면 되는거지! 기존 생각대로 개발한다',
+          text: '뭔소리여, 그냥 하던대로 개발하면 되는거지! 기존 생각대로 개발한다',
           result: 'S',
         },
         {
@@ -46,21 +42,21 @@ const initState = {
           result: 'T',
         },
         {
-          text: '아... 내일도 야근 각이구나 ㅠㅠ! 일단 동료의 자리로 가 본다',
+          text: '아… 내일도 야근 각이구나 ㅠㅠ! 일단 동료의 자리로 가 본다',
           result: 'F',
         },
       ],
     },
     {
       question:
-        '팀장님이 xx씨 그전에 말한 기능 내일 오후까지 완료 부탁해요라고 말했다!\n\n나의 선택은?',
+        '팀장님이 xx씨 그전에 말한 기능 내일 오후까지 완료 부탁해요 라고 말했다!\n\n나의 선택은?',
       answer: [
         {
           text: '일단 빠르게 개발 완료하고, 나머지 시간에 논다',
           result: 'J',
         },
         {
-          text: '그거 내일 아침에 와서 개발해도 충분 하겠는데? 일단 논다',
+          text: '그거 내일 아침에 와서 개발해도 충분하겠는데? 일단 논다',
           result: 'P',
         },
       ],
@@ -134,65 +130,78 @@ const initState = {
   },
 }
 
-const initStateEmpty = {
-  mbtiResult: '',
-  page: 0,
-  survey: [],
-  explanation: {},
-}
+// Redux 데이터를 최초 DB에 넣어주는 컨트롤러
+const setData = async (req, res) => {
+  try {
+    // 데이터를 삽입하는 구문
 
-//Action 생성 함수 설정
-export function init(data) {
-  return {
-    type: INIT,
-    payload: data,
+    // 먼저 몽고디비 접속
+    const client = await mongoClient.connect()
+
+    const data = client.db('mbti').collection('data')
+
+    // 데이터 통으로 넣으면 끝!
+    await data.insertOne(initState)
+    res.status(200).json('데이터 추가 성공')
+  } catch (err) {
+    console.error(err)
+    res.status(500).json('데이터 삽입 실패, 알 수 없는 문제 발생')
   }
 }
 
-export function check(result) {
-  return {
-    type: CHECK,
-    payload: { result },
+// Redux 데이터를 가지고 오는 컨트롤러
+const getData = async (req, res) => {
+  try {
+    // 먼저 몽고디비 접속
+    const client = await mongoClient.connect()
+
+    const data = client.db('mbti').collection('data')
+
+    // 데이터 통으로 넣으면 끝!
+    const mbtiData = await data.find({}).toArray()
+    res.status(200).json(mbtiData)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json('데이터 삽입 실패, 알 수 없는 문제 발생')
   }
 }
 
-export function next() {
-  return {
-    type: NEXT,
+// 방문자 수를 구하는 컨트롤러
+const getCounts = async (req, res) => {
+  try {
+    // 먼저 몽고디비 접속
+    const client = await mongoClient.connect()
+
+    const countDB = client.db('mbti').collection('counts')
+
+    // id가 1인 애 찾기
+    const counts = await countDB.findOne({ id: 1 })
+    res.status(200).json(counts)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json('데이터 삽입 실패, 알 수 없는 문제 발생')
   }
 }
 
-export function reset() {
-  return {
-    type: RESET,
+// 방문자 수를 +1 만큼 증가 시켜주는 컨트롤러
+const incCounts = async (req, res) => {
+  try {
+    // 먼저 몽고디비 접속
+    const client = await mongoClient.connect()
+
+    const countDB = client.db('mbti').collection('counts')
+
+    await countDB.updateOne({ id: 1 }, { $inc: { counts: +1 } })
+    res.status(200).json('방문자 수 업데이트 성공')
+  } catch (err) {
+    console.error(err)
+    res.status(500).json('데이터 삽입 실패, 알 수 없는 문제 발생')
   }
 }
 
-export default function mbti(state = initStateEmpty, action) {
-  switch (action.type) {
-    case INIT:
-      return {
-        ...state,
-        survey: action.payload.survey,
-        explanation: action.payload.explanation,
-      }
-    case CHECK:
-      return {
-        ...state,
-        mbtiResult: state.mbtiResult + action.payload.result,
-      }
-    case NEXT:
-      return {
-        ...state,
-        page: state.page + 1,
-      }
-    case RESET:
-      return {
-        ...state,
-        page: 0,
-        mbtiResult: '',
-      }
-    default:
-      return state
-  }
+module.exports = {
+  setData,
+  getData,
+  getCounts,
+  incCounts,
 }
